@@ -1,0 +1,13 @@
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.git
+.gitignore
+.env.local
+.vscode
+.system_generated
+.tempmediaStorage
+venv
+env
+*.log

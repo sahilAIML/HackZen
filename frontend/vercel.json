@@ -1,0 +1,9 @@
+{
+  "cleanUrls": true,
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "https://fourth-rabbit-crest-vertex.trycloudflare.com/api/$1"
+    }
+  ]
+}
