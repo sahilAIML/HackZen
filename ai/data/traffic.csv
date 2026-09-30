@@ -1,0 +1,2 @@
+id,event_type,road_id,severity,delay_multiplier,start_time,end_time,status,description,affected_route_id
+1,TRAFFIC_SURGE,CORRIDOR-GT-ROAD,HIGH,1.45,2026-09-30 16:44:57,,ACTIVE,Traffic surge detected on Collectorate - Brodipet corridor (+45% congestion),1
