@@ -22,7 +22,7 @@ class RouteManager {
       const execTime = optimizationMetrics.execution_time || 1.84;
 
       metricsContainer.innerHTML = `
-        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; flex-wrap: wrap; gap: 10px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
           <div>
             <h3 style="font-size: 1.05rem; font-weight: 800; color: #0f172a;">OR-Tools VRP Optimization Performance</h3>
             <p style="font-size: 0.78rem; color: #64748b;">Deterministic CVRP with time windows, traffic penalties & capacity dimensions</p>
@@ -32,7 +32,7 @@ class RouteManager {
           </div>
         </div>
 
-        <div class="route-perf-grid">
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px;">
           <div class="clay-card-inset">
             <span style="font-size: 0.72rem; color: #64748b; font-weight: 700;">DISTANCE BEFORE</span>
             <div class="mono" style="font-size: 1.25rem; font-weight: 800; color: #64748b;">${distBefore} km</div>

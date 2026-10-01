@@ -132,3 +132,43 @@ CREATE TABLE IF NOT EXISTS audit_logs (
 
 CREATE INDEX IF NOT EXISTS idx_audit_time ON audit_logs(timestamp);
 CREATE INDEX IF NOT EXISTS idx_audit_type ON audit_logs(event_type);
+
+-- Interbank Switch Prototype: Multi-Bank Accounts & ATM Withdrawals
+CREATE TABLE IF NOT EXISTS bank_accounts (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    card_number TEXT UNIQUE NOT NULL,
+    card_type TEXT DEFAULT 'Debit (Chip + PIN)',
+    bank_code TEXT NOT NULL,
+    bank_name TEXT NOT NULL,
+    account_number TEXT UNIQUE NOT NULL,
+    holder_name TEXT NOT NULL,
+    pin TEXT NOT NULL,
+    balance REAL NOT NULL,
+    daily_limit REAL DEFAULT 50000.0,
+    status TEXT DEFAULT 'ACTIVE'
+);
+
+CREATE INDEX IF NOT EXISTS idx_bank_card ON bank_accounts(card_number);
+
+CREATE TABLE IF NOT EXISTS atm_withdrawals (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    atm_id INTEGER NOT NULL,
+    atm_code TEXT NOT NULL,
+    card_number TEXT NOT NULL,
+    bank_code TEXT NOT NULL,
+    bank_name TEXT NOT NULL,
+    holder_name TEXT NOT NULL,
+    amount REAL NOT NULL,
+    dispensed_notes TEXT,
+    timestamp TEXT NOT NULL,
+    switch_reference TEXT NOT NULL,
+    auth_code TEXT NOT NULL,
+    status TEXT DEFAULT 'SUCCESS',
+    account_balance_after REAL NOT NULL,
+    atm_cash_after REAL NOT NULL,
+    FOREIGN KEY (atm_id) REFERENCES atms(id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_atm_with_atm ON atm_withdrawals(atm_id);
+CREATE INDEX IF NOT EXISTS idx_atm_with_card ON atm_withdrawals(card_number);
+

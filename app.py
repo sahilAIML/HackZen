@@ -19,6 +19,7 @@ from services.route_optimizer import RouteOptimizerService
 from services.traffic_engine import TrafficEngine
 from services.audit_service import AuditService
 from services.gemini_service import gemini_copilot
+from services.bank_switch import InterbankSwitchService
 from optimization.constraints import ConstraintValidator
 
 app = Flask(__name__, static_folder="frontend")
@@ -39,6 +40,7 @@ prediction_service = DemandPredictionService()
 risk_engine = RiskEngine()
 cash_allocator = CashAllocationEngine()
 route_optimizer = RouteOptimizerService()
+bank_switch = InterbankSwitchService()
 
 # Run initial demand and route assessment so system is live immediately
 try:
@@ -842,6 +844,87 @@ def driver_complete_stop():
             "success": True,
             "message": f"Successfully delivered Rs {cash_amount:,.0f} to {atm_code or 'ATM'}."
         })
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+# -------------------------------------------------------------
+# ATM Terminal & Multi-Bank Switch APIs (Prototype Kiosk)
+# -------------------------------------------------------------
+@app.route("/api/atm/banks", methods=["GET"])
+def get_atm_banks():
+    """Retrieve supported mock accounts and banks for interactive prototype testing"""
+    try:
+        accounts = bank_switch.get_supported_banks_and_accounts()
+        return jsonify({
+            "success": True,
+            "switch_network": "National Financial Switch (NFS / NPCI)",
+            "supported_banks": ["HDFC Bank", "State Bank of India", "ICICI Bank", "Axis Bank", "Punjab National Bank", "Bank of Baroda"],
+            "accounts": accounts
+        })
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@app.route("/api/atm/terminal/<atm_code>", methods=["GET"])
+def get_atm_terminal(atm_code):
+    """Get real-time ATM cassette status and machine info"""
+    try:
+        atm = bank_switch.get_atm_terminal_info(atm_code)
+        if not atm:
+            return jsonify({"success": False, "error": f"ATM {atm_code} not found."}), 404
+        return jsonify({"success": True, "atm": atm})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@app.route("/api/atm/refill", methods=["POST"])
+def refill_atm_terminal():
+    """Refills an ATM cassette to full capacity for continuous prototype testing"""
+    try:
+        data = request.get_json() or {}
+        atm_code = data.get("atm_code") or data.get("atm_id") or "ATM-101"
+        amount = data.get("amount")
+        result = bank_switch.refill_atm_cassette(atm_code, amount)
+        status_code = 200 if result.get("success") else 400
+        return jsonify(result), status_code
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@app.route("/api/atm/withdraw", methods=["POST"])
+def process_atm_withdrawal():
+    """Process cash withdrawal with PIN authorization and instant risk recalculation"""
+    try:
+        data = request.get_json() or {}
+        atm_code = data.get("atm_code") or data.get("atm_id")
+        card_number = data.get("card_number")
+        pin = data.get("pin")
+        amount = data.get("amount")
+
+        if not atm_code:
+            return jsonify({"success": False, "error": "ATM identifier is required."}), 400
+        if not card_number:
+            return jsonify({"success": False, "error": "Card number is required."}), 400
+        if not pin:
+            return jsonify({"success": False, "error": "4-Digit PIN is required."}), 400
+        if amount is None:
+            return jsonify({"success": False, "error": "Withdrawal amount is required."}), 400
+
+        result = bank_switch.process_withdrawal(
+            atm_identifier=atm_code,
+            card_number=card_number,
+            pin=pin,
+            amount=amount
+        )
+        status_code = 200 if result.get("success") else 400
+        return jsonify(result), status_code
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@app.route("/api/atm/withdrawals", methods=["GET"])
+def get_atm_withdrawals():
+    """Get recent ATM withdrawal transactions across the network"""
+    try:
+        limit = int(request.args.get("limit", 25))
+        withdrawals = bank_switch.get_recent_withdrawals(limit=limit)
+        return jsonify({"success": True, "withdrawals": withdrawals})
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
 

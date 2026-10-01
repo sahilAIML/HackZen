@@ -176,6 +176,10 @@ class CashRouteMap {
             width: 100%; background: #4f46e5; color: white; border: none; border-radius: 6px;
             padding: 5px 8px; font-size: 11px; font-weight: 600; cursor: pointer;
           ">View Full Intelligence</button>
+          <button onclick="window.app.openAtmInKiosk('${atm.atm_code}')" style="
+            width: 100%; margin-top: 4px; background: #059669; color: white; border: none; border-radius: 6px;
+            padding: 5px 8px; font-size: 11px; font-weight: 600; cursor: pointer;
+          ">🏧 Withdraw Cash (Kiosk)</button>
         </div>
       `);
 

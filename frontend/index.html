@@ -33,15 +33,43 @@
     </div>
 
     <!-- Navigation Tabs -->
-    <!-- Navigation Tabs (Each opens in a new browser tab) -->
     <nav class="nav-tabs-container">
-      <a class="nav-tab-btn active" href="/?tab=tabCommandCenter" target="_blank" data-tab="tabCommandCenter" title="Open Command Center in new tab">Command Center</a>
-      <a class="nav-tab-btn" href="/?tab=tabAtms" target="_blank" data-tab="tabAtms" title="Open ATM Intelligence in new tab">ATM Intelligence</a>
-      <a class="nav-tab-btn" href="/?tab=tabFleet" target="_blank" data-tab="tabFleet" title="Open CIT Fleet in new tab">CIT Fleet</a>
-      <a class="nav-tab-btn" href="/?tab=tabDriverPortal" target="_blank" data-tab="tabDriverPortal" title="Open Driver Portal in new tab">Driver Portal</a>
-      <a class="nav-tab-btn" href="/?tab=tabAnalytics" target="_blank" data-tab="tabAnalytics" title="Open Analytics in new tab">Analytics</a>
-      <a class="nav-tab-btn" href="/?tab=tabAudit" target="_blank" data-tab="tabAudit" title="Open Decision Audit in new tab">Decision Audit</a>
-      <a id="navCopilot" class="nav-tab-btn" href="/?tab=tabCopilot" target="_blank" data-tab="tabCopilot" style="background: linear-gradient(135deg, rgba(79, 70, 229, 0.12), rgba(124, 58, 237, 0.12)); color: #4f46e5; font-weight: 800;" title="Open AI Copilot in new tab">✨ AI Copilot</a>
+      <a href="?tab=tabCommandCenter" class="nav-tab-btn active" data-tab="tabCommandCenter" title="Command Center (Live Map & Real-time Operations)">
+        <span>Command Center</span>
+        <span class="nav-popout-icon" title="Open in new tab">↗</span>
+      </a>
+      <a href="?tab=tabAtms" class="nav-tab-btn" data-tab="tabAtms" title="ATM Inventory, Criticality & Demand Intelligence">
+        <span>ATM Intelligence</span>
+        <span class="nav-popout-icon" title="Open in new tab">↗</span>
+      </a>
+      <a href="?tab=tabFleet" class="nav-tab-btn" data-tab="tabFleet" title="Armored Cash-in-Transit Fleet & Routing">
+        <span>CIT Fleet</span>
+        <span class="nav-popout-icon" title="Open in new tab">↗</span>
+      </a>
+      <a href="?tab=tabDriverPortal" class="nav-tab-btn" data-tab="tabDriverPortal" title="Driver Mobile / In-Cab Delivery Manifest">
+        <span>Driver Portal</span>
+        <span class="nav-popout-icon" title="Open in new tab">↗</span>
+      </a>
+      <a href="?tab=tabAnalytics" class="nav-tab-btn" data-tab="tabAnalytics" title="Executive Analytics & Performance Scorecards">
+        <span>Analytics</span>
+        <span class="nav-popout-icon" title="Open in new tab">↗</span>
+      </a>
+      <a href="?tab=tabAudit" class="nav-tab-btn" data-tab="tabAudit" title="Immutable Decision Audit & System Event Logs">
+        <span>Decision Audit</span>
+        <span class="nav-popout-icon" title="Open in new tab">↗</span>
+      </a>
+      <a href="?tab=tabCopilot" id="navCopilot" class="nav-tab-btn" data-tab="tabCopilot" style="background: linear-gradient(135deg, rgba(79, 70, 229, 0.12), rgba(124, 58, 237, 0.12)); color: #4f46e5; font-weight: 800;" title="Gemini AI Route & Cash Copilot">
+        <span>✨ AI Copilot</span>
+        <span class="nav-popout-icon" title="Open in new tab">↗</span>
+      </a>
+      <a href="?tab=tabAtmTerminal" id="navAtmTerminal" class="nav-tab-btn" data-tab="tabAtmTerminal" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(5, 150, 105, 0.15)); color: #047857; font-weight: 800;" title="Interactive Multi-Bank ATM Terminal">
+        <span>🏧 ATM Kiosk</span>
+        <span class="nav-popout-icon" title="Open in new tab">↗</span>
+      </a>
+      <label class="nav-newtab-switch" title="When enabled, selecting any navigation tab opens it in a new browser tab">
+        <input type="checkbox" id="navOpenNewTabToggle" checked>
+        <span>New Tab ↗</span>
+      </label>
     </nav>
 
     <!-- Header Actions & Status Badges -->
@@ -51,6 +79,9 @@
       </div>
       <button class="clay-button clay-button-secondary clay-button-sm" onclick="window.app.openLoginModal()">
         Switch Role
+      </button>
+      <button class="clay-button clay-button-primary clay-button-sm" onclick="window.app.simulation.runHackathonDemo()">
+        ▶ Run Hackathon Demo
       </button>
     </div>
   </header>
@@ -364,7 +395,7 @@
             </div>
 
             <!-- Metrics Breakdown Grid -->
-            <div class="explain-metrics-grid" style="margin-bottom: 14px;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px;">
               <div class="clay-card-inset">
                 <span style="font-size: 0.7rem; color: #64748b; font-weight: 700;">CURRENT CASH</span>
                 <div class="mono" id="explainCurrentCash" style="font-size: 1.1rem; font-weight: 800; color: #0f172a;">₹18,500</div>
@@ -423,17 +454,16 @@
             <h2 style="font-size: 1.3rem; font-weight: 800; color: #0f172a;">ATM Fleet Intelligence</h2>
             <p style="font-size: 0.8rem; color: #64748b;">Comprehensive status, demand forecasts, and risk metrics for all 359 network ATMs</p>
           </div>
-          <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap; max-width: 100%;">
+          <div style="display: flex; gap: 10px; align-items: center;">
             <span class="clay-badge badge-neutral" id="atmsCountBadge">359 ATMs</span>
             <input type="text" id="atmsSearchInput" placeholder="Search ATM code, name, address..." style="
               padding: 9px 14px; border-radius: 12px; border: 1px solid var(--border-card);
               background: var(--bg-surface-inset); font-family: var(--font-main); font-size: 0.84rem;
-              outline: none; width: 260px; max-width: 100%; flex: 1 1 200px;
+              outline: none; width: 260px;
             ">
             <select id="atmsRiskFilter" style="
               padding: 9px 12px; border-radius: 12px; border: 1px solid var(--border-card);
               background: var(--bg-surface-inset); font-family: var(--font-main); font-size: 0.84rem;
-              flex: 1 1 140px; max-width: 100%;
             ">
               <option value="ALL">All Risk Levels</option>
               <option value="CRITICAL">Critical Risk</option>
@@ -444,7 +474,6 @@
             <select id="atmsStatusFilter" style="
               padding: 9px 12px; border-radius: 12px; border: 1px solid var(--border-card);
               background: var(--bg-surface-inset); font-family: var(--font-main); font-size: 0.84rem;
-              flex: 1 1 140px; max-width: 100%;
             ">
               <option value="ALL">All Operational Status</option>
               <option value="NORMAL">Normal</option>
@@ -501,7 +530,7 @@
       </div>
 
       <!-- Quick Summary Stats Grid -->
-      <div class="analytics-stats-grid">
+      <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px;">
         <div class="clay-card">
           <span style="font-size: 0.74rem; font-weight: 700; color: #64748b; text-transform: uppercase;">Stockout Prevention</span>
           <div class="mono" id="statStockoutPrevention" style="font-size: 1.8rem; font-weight: 800; color: #10b981; margin: 6px 0;">96.8%</div>
@@ -525,7 +554,7 @@
       </div>
 
       <!-- Charts Grid -->
-      <div class="analytics-charts-grid">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
         <div class="clay-card">
           <h3 style="font-size: 1rem; font-weight: 800; color: #0f172a; margin-bottom: 12px;">Intraday Demand Velocity by Hour</h3>
           <div style="height: 280px; width: 100%;">
@@ -602,22 +631,7 @@
             <button class="clay-button clay-button-secondary clay-button-sm" onclick="window.app.copilotQuickAsk('Generate daily cash recap and replenishment summary')">
               📊 Daily Recap
             </button>
-            <button class="clay-button clay-button-primary clay-button-sm" onclick="window.app.copilotQuickAsk('Perform full network cash stockout risk audit and provide dispatch priorities')">
-              ⚡ Full Network Audit
-            </button>
-            <button class="clay-button clay-button-secondary clay-button-sm" onclick="window.app.clearCopilotChat()">
-              ↺ Clear Chat
-            </button>
           </div>
-        </div>
-
-        <!-- Suggestion chips row -->
-        <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(226, 232, 240, 0.8);">
-          <span style="font-size: 0.76rem; font-weight: 700; color: #64748b; align-self: center;">Suggested:</span>
-          <button class="clay-badge badge-neutral" style="cursor: pointer;" onclick="window.app.copilotQuickAsk('Audit all ATMs facing imminent stockout hazard and recommend cash amounts')">🔍 Imminent Stockout</button>
-          <button class="clay-badge badge-neutral" style="cursor: pointer;" onclick="window.app.copilotQuickAsk('Diagnose unexpected cash demand surge at ATM-103')">💸 ATM-103 Spike</button>
-          <button class="clay-badge badge-neutral" style="cursor: pointer;" onclick="window.app.copilotQuickAsk('Summarize CIT vehicle payloads, time window feasibility, and driver assignments')">🚐 CIT Fleet Feasibility</button>
-          <button class="clay-badge badge-neutral" style="cursor: pointer;" onclick="window.app.copilotQuickAsk('Explain how CatBoost demand forecasts drive optimal cash allocations')">🤖 CatBoost ML Model</button>
         </div>
       </div>
 
@@ -628,29 +642,16 @@
           <div style="display: flex; gap: 12px; align-items: flex-start;">
             <div style="width: 38px; height: 38px; border-radius: 12px; background: linear-gradient(135deg, #4f46e5, #7c3aed); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0;">✨</div>
             <div class="clay-card-inset" style="padding: 14px 18px; max-width: 85%; line-height: 1.5;">
-              <div style="display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 0.76rem; color: #64748b;">
-                <strong style="color: #4f46e5;">CashRouteAI Copilot (Google Cloud AI)</strong>
-                <span>Real-Time Dispatch Assistant</span>
-              </div>
-              <div style="font-size: 0.88rem; color: #1e293b; line-height: 1.6;">
-                Hello Dispatcher! I am your <strong>Intraday Cash Intelligence & Fleet Copilot</strong>.<br><br>
-                I continuously monitor:
-                <ul style="margin: 6px 0 6px 20px; padding: 0;">
-                  <li><strong>CatBoost Demand Predictions</strong> across all 359 Izmir network ATMs (holdout MAE: ₹789.60, R²: 0.7593).</li>
-                  <li><strong>Intraday Stockout Risk</strong>, reserve buffer thresholds (30%), and critical replenishment queues.</li>
-                  <li><strong>Deterministic CVRP Route Optimization</strong>, transit insurance policies (₹1.5M), and driver delivery manifests.</li>
-                  <li><strong>Live Incident Feeds</strong> including arterial traffic surges, road closures, and hardware outages.</li>
-                </ul>
-                Click any suggestion chip above or ask me a custom operational question below!
-              </div>
+              <strong style="color: #4f46e5; display: block; margin-bottom: 4px;">CashRouteAI Copilot (Google Gemini Intelligence)</strong>
+              Hello Dispatcher! I am your AI Cash Operations & Fleet Logistics Officer. I have live telemetry for all 359 Izmir ATMs, CatBoost demand predictions, and active CIT routes. How can I assist you right now?
             </div>
           </div>
         </div>
 
         <!-- Chat Input Form -->
-        <form id="copilotForm" onsubmit="event.preventDefault(); window.app.sendCopilotQuery();" style="display: flex; gap: 10px; flex-wrap: wrap;">
-          <input type="text" id="copilotInput" placeholder="Ask AI Copilot about cash risks, demand spikes, rerouting recommendations..." style="
-            flex: 1 1 280px; min-width: 0; padding: 14px 18px; border-radius: 14px; border: 1px solid var(--border-card);
+        <form id="copilotForm" onsubmit="event.preventDefault(); window.app.sendCopilotQuery();" style="display: flex; gap: 10px;">
+          <input type="text" id="copilotInput" placeholder="Ask AI Copilot (e.g. 'Analyze cash shortage in Aliağa', 'Explain today\'s risk score', 'Reroute advice')..." style="
+            flex: 1; padding: 14px 18px; border-radius: 14px; border: 1px solid var(--border-card);
             background: var(--bg-surface-inset); font-family: var(--font-main); font-size: 0.92rem;
             outline: none; box-sizing: border-box;
           ">
@@ -675,7 +676,7 @@
             <p style="font-size: 0.84rem; color: #64748b;" id="driverSubtitle">Assigned Driver: Rajesh Kumar &bull; Active Route: ROUTE-01</p>
           </div>
 
-          <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+          <div style="display: flex; gap: 10px;">
             <button class="clay-button clay-button-amber clay-button-sm" onclick="window.app.simulation.triggerTrafficSurge()">
               ⚠️ Report Traffic Delay
             </button>
@@ -689,7 +690,7 @@
         </div>
 
         <!-- Vehicle Capacity & Payload Gauge -->
-        <div class="driver-metrics-grid">
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-top: 20px;">
           <div class="clay-card-inset">
             <span style="font-size: 0.72rem; color: #64748b; font-weight: 700; text-transform: uppercase;">Current Cash Payload</span>
             <div class="mono" id="driverRemainingCash" style="font-size: 1.3rem; font-weight: 800; color: #4f46e5;">₹75,000</div>
@@ -718,7 +719,7 @@
 
       <!-- Stop-by-stop Delivery Checklist -->
       <div class="clay-card">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; flex-wrap: wrap; gap: 10px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
           <div>
             <h3 style="font-size: 1.1rem; font-weight: 800; color: #0f172a;">Assigned ATM Delivery Manifest</h3>
             <p style="font-size: 0.78rem; color: #64748b;">Complete cash replenishment at designated ATM stops in optimized sequence</p>
@@ -728,6 +729,424 @@
 
         <div id="driverStopsChecklist">
           <!-- Populated by driver controller -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         TAB 7: AI COPILOT (Google Gemini Dispatch Assistant)
+         ============================================================ -->
+    <section id="tabCopilot" class="tab-pane">
+      <div class="clay-card" style="margin-bottom: 20px;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 14px;">
+          <div>
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <span style="font-size: 1.5rem;">🤖</span>
+              <h2 style="font-size: 1.25rem; font-weight: 800; color: #0f172a;">AI Dispatch Copilot</h2>
+              <span class="clay-badge badge-primary" style="background: linear-gradient(135deg, #4f46e5, #7c3aed); color: white;">
+                Powered by Google AI
+              </span>
+            </div>
+            <p style="font-size: 0.82rem; color: #64748b; margin-top: 4px;">
+              Autonomous intraday reasoning engine for ATM stockout diagnosis, dynamic CVRP re-optimization, and CIT vehicle risk management.
+            </p>
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <button class="clay-button clay-button-secondary clay-button-sm" onclick="window.app.clearCopilotChat()">
+              ↺ Clear History
+            </button>
+            <button class="clay-button clay-button-primary clay-button-sm" onclick="window.app.askCopilot('Perform full network cash stockout risk audit and provide dispatch priorities')">
+              ⚡ Full Network Audit
+            </button>
+          </div>
+        </div>
+
+        <!-- Quick Query Suggestion Chips -->
+        <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 16px; padding-top: 14px; border-top: 1px solid #e2e8f0;">
+          <span style="font-size: 0.78rem; font-weight: 700; color: #475569; align-self: center; margin-right: 4px;">Quick Queries:</span>
+          <button class="clay-badge badge-neutral" style="cursor: pointer; font-size: 0.76rem;" onclick="window.app.askCopilot('Audit all ATMs facing imminent stockout hazard and recommend cash amounts')">
+            🔍 Imminent Stockout Audit
+          </button>
+          <button class="clay-badge badge-neutral" style="cursor: pointer; font-size: 0.76rem;" onclick="window.app.askCopilot('Evaluate arterial traffic surge delay and propose rerouting strategy')">
+            🚦 Traffic Surge Advisory
+          </button>
+          <button class="clay-badge badge-neutral" style="cursor: pointer; font-size: 0.76rem;" onclick="window.app.askCopilot('Diagnose unexpected cash demand surge at ATM-103')">
+            💸 Diagnose ATM-103 Cash Spike
+          </button>
+          <button class="clay-badge badge-neutral" style="cursor: pointer; font-size: 0.76rem;" onclick="window.app.askCopilot('Summarize CIT vehicle payloads, time window feasibility, and driver assignments')">
+            🚐 CIT Fleet Capacity Check
+          </button>
+          <button class="clay-badge badge-neutral" style="cursor: pointer; font-size: 0.76rem;" onclick="window.app.askCopilot('Explain how CatBoost demand forecasts drive optimal cash allocations')">
+            🤖 Explain CatBoost Demand Predictions
+          </button>
+        </div>
+      </div>
+
+      <!-- Chat Conversation Box -->
+      <div class="clay-card" style="padding: 20px;">
+        <div id="copilotChatWindow" style="
+          min-height: 380px; max-height: 520px; overflow-y: auto; padding: 16px;
+          background: #f8fafc; border-radius: 14px; border: 1px solid #e2e8f0;
+          display: flex; flex-direction: column; gap: 14px; margin-bottom: 16px;
+        ">
+          <!-- Initial AI Greeting Message -->
+          <div style="display: flex; gap: 12px; align-items: flex-start;">
+            <div style="width: 38px; height: 38px; border-radius: 50%; background: linear-gradient(135deg, #4f46e5, #7c3aed); display: flex; align-items: center; justify-content: center; color: white; font-size: 1.1rem; flex-shrink: 0; box-shadow: 0 4px 10px rgba(79, 70, 229, 0.3);">
+              🤖
+            </div>
+            <div style="background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px 18px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); max-width: 85%;">
+              <div style="display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 0.76rem; color: #64748b;">
+                <strong style="color: #4f46e5;">CashRouteAI Copilot (Google Cloud AI)</strong>
+                <span>Real-Time Dispatch Assistant</span>
+              </div>
+              <div style="font-size: 0.88rem; color: #1e293b; line-height: 1.6;">
+                Hello Dispatcher! I am your <strong>Intraday Cash Intelligence & Fleet Copilot</strong>.<br><br>
+                I continuously monitor:
+                <ul style="margin: 6px 0 6px 20px; padding: 0;">
+                  <li><strong>CatBoost Demand Predictions</strong> across all 359 Izmir network ATMs (evaluated holdout MAE: ₹789.60, R²: 0.7593).</li>
+                  <li><strong>Intraday Stockout Risk</strong>, reserve buffer thresholds (30%), and critical replenishment queues.</li>
+                  <li><strong>Deterministic CVRP Route Optimization</strong>, transit insurance policies (₹1.5M), and driver delivery manifests.</li>
+                  <li><strong>Live Incident Feeds</strong> including arterial traffic surges, road closures, and hardware outages.</li>
+                </ul>
+                Click any suggestion chip above or ask me a custom operational question below!
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Chat Input Form -->
+        <form id="copilotForm" onsubmit="window.app.handleCopilotSubmit(event)" style="display: flex; gap: 10px;">
+          <input id="copilotInput" type="text" class="clay-input" style="flex: 1; padding: 12px 18px; font-size: 0.9rem;" placeholder="Ask AI Copilot about cash risks, demand spikes, rerouting recommendations..." autocomplete="off">
+          <button type="submit" id="btnSendCopilot" class="clay-button clay-button-primary" style="padding: 12px 24px; font-weight: 700;">
+            Send Query
+          </button>
+        </form>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         TAB 8: ATM KIOSK & MULTI-BANK INTERBANK SWITCH TERMINAL
+         ============================================================ -->
+    <section id="tabAtmTerminal" class="tab-pane">
+      <!-- Kiosk Banner Header -->
+      <div class="clay-card" style="margin-bottom: 24px; padding: 22px 28px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+          <div style="display: flex; align-items: center; gap: 14px;">
+            <div style="width: 52px; height: 52px; border-radius: 16px; background: linear-gradient(135deg, #059669, #10b981); display: flex; align-items: center; justify-content: center; font-size: 1.8rem; color: white; box-shadow: 0 8px 16px rgba(16, 185, 129, 0.3);">
+              🏧
+            </div>
+            <div>
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <h2 style="font-size: 1.35rem; font-weight: 800; color: #0f172a; margin: 0;">
+                  ATM Hardware Terminal & Multi-Bank Switch Kiosk
+                </h2>
+                <span class="clay-badge badge-low" style="font-size: 0.74rem;">NFS / NPCI Live Switch</span>
+              </div>
+              <p style="font-size: 0.84rem; color: #64748b; margin-top: 4px;">
+                Test real cash withdrawals across multiple banks (HDFC, SBI, ICICI, Axis, PNB). Watch the ATM cassette cash deduct and CashRouteAI risk levels recalculate in real-time.
+              </p>
+            </div>
+          </div>
+
+          <!-- Select ATM Machine Dropdown -->
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <div style="text-align: right;">
+              <div style="font-size: 0.72rem; font-weight: 700; color: #64748b; text-transform: uppercase;">Active ATM Terminal:</div>
+              <select id="kioskAtmSelect" class="clay-select" style="padding: 8px 14px; font-weight: 700; min-width: 280px; font-size: 0.86rem; border-color: #cbd5e1;"></select>
+            </div>
+            <div id="kioskAtmRiskBadge" class="clay-badge badge-low" style="padding: 8px 14px; font-size: 0.8rem; font-weight: 800;">
+              LOW RISK
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Kiosk Main Interactive Grid -->
+      <div class="atm-kiosk-layout">
+
+        <!-- LEFT COLUMN: Realistic ATM Hardware Machine Bezel -->
+        <div class="atm-bezel">
+          <!-- ATM Machine Top Banner -->
+          <div class="atm-header-bar">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #10b981; box-shadow: 0 0 8px #10b981;"></span>
+              <strong style="font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase; color: #94a3b8;">
+                National Financial Switch &bull; Multi-Bank ATM
+              </strong>
+            </div>
+            <span class="mono" style="font-size: 0.72rem; color: #38bdf8;">SECURE EMV / PIN</span>
+          </div>
+
+          <!-- ATM Digital Display Screen -->
+          <div class="atm-screen">
+            <!-- Screen Header & Bank Status -->
+            <div id="kioskScreenStatus" style="margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #1e293b;">
+              <div style="font-size: 0.8rem; color: #10b981; font-weight: 700;">● SYSTEM READY</div>
+              <div style="font-size: 0.72rem; color: #64748b;">NFS Interbank Network Connected &bull; ISO 8583 Active</div>
+            </div>
+
+            <!-- Inserted Card Graphic Preview -->
+            <div id="kioskCardGraphic" class="kiosk-debit-card" style="background: linear-gradient(135deg, #004c8f 0%, #002244 100%); margin-bottom: 16px;">
+              <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                <div>
+                  <div id="cardBankNameDisplay" style="font-size: 1.05rem; font-weight: 800; letter-spacing: 0.02em;">HDFC Bank</div>
+                  <div id="cardTypeDisplay" style="font-size: 0.68rem; opacity: 0.85;">HDFC Millennia Platinum Debit</div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 6px;">
+                  <span id="cardBalanceBadge" style="font-size: 0.72rem; font-weight: 700; background: rgba(0,0,0,0.35); padding: 4px 8px; border-radius: 6px; font-family: var(--font-mono);">
+                    Bal: ₹52,400.00
+                  </span>
+                </div>
+              </div>
+
+              <div style="display: flex; align-items: center; gap: 12px; margin: 8px 0;">
+                <div class="card-emv-chip"></div>
+                <span style="font-size: 1.1rem; opacity: 0.8;">📶</span>
+              </div>
+
+              <div>
+                <div id="cardNumberDisplay" class="mono" style="font-size: 1.15rem; letter-spacing: 0.16em; font-weight: 600; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">
+                  4591-1234-5678-3456
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 6px;">
+                  <div>
+                    <div style="font-size: 0.6rem; opacity: 0.75; text-transform: uppercase;">Cardholder</div>
+                    <div id="cardHolderDisplay" style="font-size: 0.82rem; font-weight: 700; letter-spacing: 0.04em;">AARAV SHARMA</div>
+                  </div>
+                  <div style="text-align: right;">
+                    <div style="font-size: 0.6rem; opacity: 0.75; text-transform: uppercase;">Valid Thru</div>
+                    <div class="mono" style="font-size: 0.8rem; font-weight: 700;">12/29</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- PIN Input Display Box -->
+            <div class="atm-pin-box">
+              <div>
+                <div style="font-size: 0.68rem; color: #94a3b8; font-weight: 700; text-transform: uppercase;">
+                  Card PIN Security
+                </div>
+                <div id="kioskPinText" class="mono" style="font-size: 0.95rem; color: #38bdf8; font-weight: 800; letter-spacing: 0.2em;">
+                  ENTER 4-DIGIT PIN
+                </div>
+              </div>
+              <div class="atm-pin-dots">
+                <span class="atm-pin-dot"></span>
+                <span class="atm-pin-dot"></span>
+                <span class="atm-pin-dot"></span>
+                <span class="atm-pin-dot"></span>
+              </div>
+            </div>
+
+            <!-- Fast Cash Preset Buttons -->
+            <div style="margin-bottom: 8px;">
+              <label style="display: block; font-size: 0.72rem; color: #94a3b8; font-weight: 700; text-transform: uppercase; margin-bottom: 6px;">
+                Fast Cash Withdrawal Amount
+              </label>
+              <div class="atm-preset-grid">
+                <button type="button" class="atm-preset-amt" data-amt="500">₹500</button>
+                <button type="button" class="atm-preset-amt" data-amt="1000">₹1,000</button>
+                <button type="button" class="atm-preset-amt active" data-amt="2000">₹2,000</button>
+                <button type="button" class="atm-preset-amt" data-amt="5000">₹5,000</button>
+                <button type="button" class="atm-preset-amt" data-amt="10000">₹10,000</button>
+                <button type="button" class="atm-preset-amt" data-amt="20000">₹20,000</button>
+              </div>
+            </div>
+
+            <!-- Custom Amount Input -->
+            <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 14px;">
+              <span style="font-size: 0.76rem; color: #94a3b8; font-weight: 700; white-space: nowrap;">Or Custom: ₹</span>
+              <input type="number" id="kioskCustomAmount" value="2000" step="100" min="100" max="25000" style="
+                flex: 1; padding: 8px 12px; border-radius: 8px; border: 1px solid #334155;
+                background: #0f172a; color: white; font-family: var(--font-mono); font-size: 0.95rem; font-weight: 700;
+              ">
+            </div>
+
+            <!-- Withdraw Primary Button -->
+            <button id="kioskWithdrawBtn" type="button" class="clay-button clay-button-primary" style="
+              width: 100%; padding: 14px; font-size: 1rem; font-weight: 800;
+              background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+              box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4);
+            " onclick="window.app.atmKiosk.triggerWithdrawal()">
+              💸 Withdraw & Dispense Cash
+            </button>
+          </div>
+
+          <!-- Tactile ATM Keypad -->
+          <div style="margin-top: 14px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+              <span style="font-size: 0.72rem; color: #94a3b8; font-weight: 700; text-transform: uppercase;">
+                Encrypted PIN Pad (EPP)
+              </span>
+              <button class="clay-button clay-button-sm" style="padding: 2px 8px; font-size: 0.68rem; background: #3730a3; color: white;" onclick="window.app.atmKiosk.handleKeypadInput('AUTOFILL')">
+                ⚡ 1-Click Auto PIN
+              </button>
+            </div>
+
+            <div class="atm-keypad-grid">
+              <button type="button" class="atm-keypad-btn" data-val="1">1</button>
+              <button type="button" class="atm-keypad-btn" data-val="2">2</button>
+              <button type="button" class="atm-keypad-btn" data-val="3">3</button>
+              <button type="button" class="atm-keypad-btn" data-val="4">4</button>
+              <button type="button" class="atm-keypad-btn" data-val="5">5</button>
+              <button type="button" class="atm-keypad-btn" data-val="6">6</button>
+              <button type="button" class="atm-keypad-btn" data-val="7">7</button>
+              <button type="button" class="atm-keypad-btn" data-val="8">8</button>
+              <button type="button" class="atm-keypad-btn" data-val="9">9</button>
+              <button type="button" class="atm-keypad-btn action-clear" data-val="CLEAR">CLEAR</button>
+              <button type="button" class="atm-keypad-btn" data-val="0">0</button>
+              <button type="button" class="atm-keypad-btn action-back" data-val="BACK">⌫</button>
+            </div>
+          </div>
+
+          <!-- Motorized Cash Dispenser Slot & Tray -->
+          <div class="atm-dispenser-slot">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+              <span style="font-size: 0.72rem; color: #94a3b8; font-weight: 700; text-transform: uppercase;">
+                Cash Dispenser Shutter
+              </span>
+              <span class="mono" style="font-size: 0.68rem; color: #10b981;">AUTO-DISPENSE READY</span>
+            </div>
+            <div id="kioskCashTray" class="atm-cash-tray">
+              <span style="color: #64748b; font-size: 0.82rem;">Cash dispenser tray ready. Notes will dispense here upon authorization.</span>
+            </div>
+          </div>
+
+          <!-- Printed Thermal Paper Receipt -->
+          <div id="kioskReceiptPaper" class="atm-receipt-paper" style="display: none;"></div>
+        </div>
+
+        <!-- RIGHT COLUMN: Multi-Bank Interbank Switch & Network Intelligence -->
+        <div style="display: flex; flex-direction: column; gap: 20px;">
+
+          <!-- 1. Interbank Switch Route Monitor -->
+          <div class="clay-card" style="padding: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 1.15rem;">🌐</span>
+                <strong style="font-size: 0.96rem; color: #0f172a;">Interbank Switch Routing Trace (ISO 8583)</strong>
+              </div>
+              <span class="clay-badge badge-neutral" style="font-size: 0.72rem;">NFS / NPCI Network</span>
+            </div>
+
+            <div class="switch-trace-container">
+              <div id="traceStep1" class="trace-step-node">
+                <div style="font-size: 1.1rem; margin-bottom: 2px;">💳</div>
+                <div style="font-size: 0.76rem; font-weight: 800;">1. ATM Terminal</div>
+                <div style="font-size: 0.68rem; color: #64748b;">EMV Card & PIN</div>
+              </div>
+              <div style="font-size: 1rem; color: #94a3b8;">➔</div>
+              <div id="traceStep2" class="trace-step-node">
+                <div style="font-size: 1.1rem; margin-bottom: 2px;">⚡</div>
+                <div style="font-size: 0.76rem; font-weight: 800;">2. NFS Switch</div>
+                <div style="font-size: 0.68rem; color: #64748b;">NPCI Routing</div>
+              </div>
+              <div style="font-size: 1rem; color: #94a3b8;">➔</div>
+              <div id="traceStep3" class="trace-step-node">
+                <div style="font-size: 1.1rem; margin-bottom: 2px;">🏦</div>
+                <div style="font-size: 0.76rem; font-weight: 800;">3. Issuer CBS</div>
+                <div style="font-size: 0.68rem; color: #64748b;">Balance Auth</div>
+              </div>
+              <div style="font-size: 1rem; color: #94a3b8;">➔</div>
+              <div id="traceStep4" class="trace-step-node">
+                <div style="font-size: 1.1rem; margin-bottom: 2px;">💵</div>
+                <div style="font-size: 0.76rem; font-weight: 800;">4. Dispenser</div>
+                <div style="font-size: 0.68rem; color: #64748b;">Cash & Risk Sync</div>
+              </div>
+            </div>
+
+            <!-- ATM Cassette Reserve Live Impact Gauge -->
+            <div class="clay-card-inset" style="padding: 14px 18px; margin-top: 10px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 8px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span style="font-size: 0.72rem; color: #64748b; font-weight: 700; text-transform: uppercase;">
+                    Target Machine Cassette:
+                  </span>
+                  <strong id="kioskAtmCodeSpan" style="font-size: 0.88rem; color: #0f172a;">ATM-101</strong>
+                  <span id="kioskAtmRiskBadge" class="clay-badge badge-success" style="font-size: 0.7rem; padding: 2px 8px;">NORMAL</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <div style="font-size: 0.84rem; font-family: var(--font-mono);">
+                    <strong id="kioskAtmCashSpan" style="color: #059669;">₹100,000</strong> / <span id="kioskAtmCapSpan" style="color: #64748b;">₹100,000</span>
+                  </div>
+                  <button id="btnRefillCassette" class="clay-button clay-button-sm" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 4px 10px; font-size: 0.72rem; height: 28px; min-height: 28px;" onclick="window.app.atmKiosk.refillCurrentAtm()" title="Refill machine cash cassette to full vault capacity">
+                    ⚡ Refill Vault
+                  </button>
+                </div>
+              </div>
+              <div style="width: 100%; height: 10px; background: #e2e8f0; border-radius: 9999px; overflow: hidden;">
+                <div id="kioskAtmCashBar" style="width: 100%; height: 100%; background: #10b981; border-radius: 9999px; transition: width 0.4s ease, background 0.4s ease;"></div>
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.74rem; color: #64748b; margin-top: 6px;">
+                <span>💡 <strong>CashRouteAI Live Sync:</strong> When cash drops below safety buffer, the platform triggers dynamic replenishment and schedules a CIT van.</span>
+                <span id="kioskRefillStatusText" style="font-weight: 600; color: #059669;"></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 2. Supported Multi-Bank Test Accounts Ledger -->
+          <div class="clay-card" style="padding: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 1.15rem;">💳</span>
+                <strong style="font-size: 0.96rem; color: #0f172a;">Customer Bank Accounts (1-Click Insert)</strong>
+              </div>
+              <span style="font-size: 0.74rem; color: #64748b;">Click any row to insert card</span>
+            </div>
+
+            <div style="overflow-x: auto;">
+              <table style="width: 100%; border-collapse: collapse; font-size: 0.84rem;">
+                <thead>
+                  <tr style="border-bottom: 2px solid #e2e8f0; font-size: 0.72rem; color: #64748b; text-transform: uppercase;">
+                    <th style="padding: 8px 12px; text-align: left;">Bank</th>
+                    <th style="padding: 8px 12px; text-align: left;">Account Holder</th>
+                    <th style="padding: 8px 12px; text-align: left;">Card Number</th>
+                    <th style="padding: 8px 12px; text-align: left;">Demo PIN</th>
+                    <th style="padding: 8px 12px; text-align: right;">Live Balance</th>
+                    <th style="padding: 8px 12px; text-align: center;">Action</th>
+                  </tr>
+                </thead>
+                <tbody id="kioskAccountsTableBody">
+                  <!-- Dynamically populated by atm_kiosk.js -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- 3. Recent ATM Interbank Withdrawal Audit Log -->
+          <div class="clay-card" style="padding: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 1.15rem;">📜</span>
+                <strong style="font-size: 0.96rem; color: #0f172a;">Recent ATM Withdrawals Audit Trail</strong>
+              </div>
+              <span class="live-pulse" title="Live Transactions"></span>
+            </div>
+
+            <div style="overflow-x: auto; max-height: 220px; overflow-y: auto;">
+              <table style="width: 100%; border-collapse: collapse; font-size: 0.82rem;">
+                <thead>
+                  <tr style="border-bottom: 2px solid #e2e8f0; font-size: 0.72rem; color: #64748b; text-transform: uppercase;">
+                    <th style="padding: 6px 12px; text-align: left;">Time</th>
+                    <th style="padding: 6px 12px; text-align: left;">Terminal</th>
+                    <th style="padding: 6px 12px; text-align: left;">Customer</th>
+                    <th style="padding: 6px 12px; text-align: left;">Amount</th>
+                    <th style="padding: 6px 12px; text-align: left;">Auth Ref</th>
+                    <th style="padding: 6px 12px; text-align: left;">Status</th>
+                  </tr>
+                </thead>
+                <tbody id="kioskRecentWithdrawalsBody">
+                  <tr>
+                    <td colspan="6" style="text-align: center; padding: 18px; color: #94a3b8;">
+                      No recent withdrawals yet. Complete a transaction above to view live audit entries.
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
         </div>
       </div>
     </section>
@@ -879,12 +1298,13 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
   <!-- Application Modules -->
-  <script src="js/map.js?v=2.4"></script>
-  <script src="js/charts.js?v=2.4"></script>
-  <script src="js/simulation.js?v=2.4"></script>
-  <script src="js/atms.js?v=2.4"></script>
-  <script src="js/vehicles.js?v=2.4"></script>
-  <script src="js/routes.js?v=2.4"></script>
-  <script src="js/dashboard.js?v=2.4"></script>
+  <script src="js/map.js?v=2.3"></script>
+  <script src="js/charts.js?v=2.3"></script>
+  <script src="js/simulation.js?v=2.3"></script>
+  <script src="js/atms.js?v=2.3"></script>
+  <script src="js/vehicles.js?v=2.3"></script>
+  <script src="js/routes.js?v=2.3"></script>
+  <script src="js/atm_kiosk.js?v=2.3"></script>
+  <script src="js/dashboard.js?v=2.3"></script>
 </body>
 </html>

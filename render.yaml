@@ -2,10 +2,11 @@ services:
   - type: web
     name: cashrouteai
     runtime: python
-    buildCommand: "pip install -r requirements.txt"
-    startCommand: "gunicorn app:app --bind 0.0.0.0:$PORT --workers 2 --timeout 120"
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app --workers 2 --timeout 120 --bind 0.0.0.0:$PORT
+    plan: free
     envVars:
       - key: PYTHON_VERSION
-        value: 3.10.12
-      - key: GOOGLE_API_KEY
-        value: AIzaSyC1o-JQk5umzad6Ag4wxcO-UuUU6LbqXTM
+        value: 3.11.9
+      - key: PORT
+        value: 10000

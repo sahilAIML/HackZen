@@ -257,7 +257,7 @@ class ATMManager {
               ₹${(atm.allocation?.recommended_refill || 0).toLocaleString()}
             </div>
           </div>
-          <div style="display: flex; gap: 10px;">
+          <div style="display: flex; gap: 10px; margin-bottom: 8px;">
             <button class="clay-button clay-button-primary" style="flex: 1;" onclick="window.app.approveAllocation('${atm.atm_code}')">
               Approve Cash Injection
             </button>
@@ -265,6 +265,9 @@ class ATMManager {
               ✨ Ask AI Copilot
             </button>
           </div>
+          <button class="clay-button" style="width: 100%; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; font-weight: 800; padding: 10px;" onclick="window.app.openAtmInKiosk('${atm.atm_code}')">
+            🏧 Test Cash Withdrawal at this ATM
+          </button>
         </div>
       `;
 

@@ -1,6 +1,29 @@
-.env
-.venv/
+# Byte-compiled / optimized / DLL files
 __pycache__/
-*.pyc
-.gemini/
+*.py[cod]
+*$py.class
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# Environment variables & secrets
+.env
+.env.local
+
+# Vercel & Cloud CLI
+.vercel/
+
+# Task logs & temporary cache
 catboost_info/
+*.log
+
+# Legacy folder
+ai/
+

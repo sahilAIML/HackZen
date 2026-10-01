@@ -11,6 +11,7 @@ class CashRouteApp {
     this.atms = new ATMManager(this);
     this.vehicles = new VehicleManager(this);
     this.routes = new RouteManager(this);
+    this.atmKiosk = new AtmKioskManager(this);
 
     this.dashboardData = null;
     this.analyticsData = null;
@@ -25,47 +26,67 @@ class CashRouteApp {
     // Load initial data
     await this.refreshAll();
 
-    // Activate tab specified in URL or default to Command Center
-    this.initTabFromURL();
+    // Initialize ATM Kiosk module
+    if (this.atmKiosk) {
+      await this.atmKiosk.init();
+    }
+
+    // Apply URL routing (?tab=... and ?atm=...)
+    this.handleUrlRouting();
 
     // Periodic soft sync every 30s
     setInterval(() => this.softSync(), 30000);
   }
 
-  initTabFromURL() {
-    const urlParams = new URLSearchParams(window.location.search);
-    let target = urlParams.get('tab');
-    if (!target) {
-      const hash = window.location.hash.replace(/^#/, '');
-      if (hash) target = hash;
-    }
-    if (!target) {
-      const path = window.location.pathname.toLowerCase().replace(/^\//, '');
-      const pathToTab = {
-        'atms': 'tabAtms',
-        'fleet': 'tabFleet',
-        'driver': 'tabDriverPortal',
-        'driverportal': 'tabDriverPortal',
-        'analytics': 'tabAnalytics',
-        'audit': 'tabAudit',
-        'copilot': 'tabCopilot',
-        'command': 'tabCommandCenter',
-        'commandcenter': 'tabCommandCenter'
-      };
-      if (pathToTab[path]) target = pathToTab[path];
+  setupNavigation() {
+    const tabs = document.querySelectorAll('.nav-tab-btn');
+    const newTabToggle = document.getElementById('navOpenNewTabToggle');
+
+    // Default to true (navbar selection opens in a new browser tab)
+    const savedNewTab = localStorage.getItem('cashroute_nav_new_tab');
+    if (newTabToggle) {
+      newTabToggle.checked = savedNewTab === null ? true : savedNewTab === 'true';
+      newTabToggle.addEventListener('change', (e) => {
+        localStorage.setItem('cashroute_nav_new_tab', e.target.checked);
+      });
     }
 
-    if (target && document.getElementById(target)) {
-      this.activateTab(target);
-    }
+    tabs.forEach(tab => {
+      // 1. Explicit popout icon click always opens in new tab
+      const popout = tab.querySelector('.nav-popout-icon');
+      if (popout) {
+        popout.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          const targetTab = tab.getAttribute('data-tab');
+          window.open(`/?tab=${targetTab}`, '_blank');
+        });
+      }
+
+      // 2. Main tab click
+      tab.addEventListener('click', (e) => {
+        const targetTab = tab.getAttribute('data-tab');
+        const openInNewTab = newTabToggle ? newTabToggle.checked : true;
+
+        // If user held Ctrl/Cmd or middle-clicked, allow standard browser new tab action
+        if (e.ctrlKey || e.metaKey || e.button === 1) {
+          return;
+        }
+
+        e.preventDefault();
+
+        if (openInNewTab) {
+          // Open selected navigation view in a new browser tab
+          window.open(`/?tab=${targetTab}`, '_blank');
+        } else {
+          // Switch view in current tab
+          this.activateTab(targetTab);
+        }
+      });
+    });
   }
 
-  activateTab(targetTab) {
-    if (!targetTab) return;
-    const targetPane = document.getElementById(targetTab);
-    if (!targetPane) return;
-
-    // Update active state on nav links
+  activateTab(targetTab, updateHistory = true) {
     const tabs = document.querySelectorAll('.nav-tab-btn');
     tabs.forEach(t => {
       if (t.getAttribute('data-tab') === targetTab) {
@@ -75,9 +96,18 @@ class CashRouteApp {
       }
     });
 
-    // Update active pane
     document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
-    targetPane.classList.add('active');
+    const pane = document.getElementById(targetTab);
+    if (pane) pane.classList.add('active');
+
+    // Update URL query parameter without full reload
+    if (updateHistory) {
+      try {
+        const url = new URL(window.location);
+        url.searchParams.set('tab', targetTab);
+        window.history.replaceState({}, '', url);
+      } catch (e) {}
+    }
 
     // Trigger tab-specific loaders
     if (targetTab === 'tabCommandCenter') {
@@ -87,7 +117,7 @@ class CashRouteApp {
         }
       }, 150);
     } else if (targetTab === 'tabAtms') {
-      this.atms.loadAtmsTable();
+      if (this.atms) this.atms.loadAtmsTable();
     } else if (targetTab === 'tabFleet') {
       this.loadVehiclesTab();
     } else if (targetTab === 'tabDriverPortal') {
@@ -99,23 +129,82 @@ class CashRouteApp {
     } else if (targetTab === 'tabCopilot') {
       const input = document.getElementById('copilotInput');
       if (input) setTimeout(() => input.focus(), 150);
+    } else if (targetTab === 'tabAtmTerminal') {
+      if (this.atmKiosk) {
+        this.atmKiosk.populateAtmDropdown();
+        this.atmKiosk.updateAtmStatusDisplay();
+      }
     }
   }
 
-  setupNavigation() {
-    const tabs = document.querySelectorAll('.nav-tab-btn');
-    tabs.forEach(tab => {
-      tab.addEventListener('click', (e) => {
-        const targetTab = tab.getAttribute('data-tab');
-        if (!targetTab) return;
+  handleUrlRouting() {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      let tab = params.get('tab') || window.location.hash.replace('#', '');
+      const atmCode = params.get('atm');
 
-        // Ensure every nav bar selection opens in a new browser tab
-        if (!tab.getAttribute('href')) {
-          e.preventDefault();
-          window.open(`/?tab=${targetTab}`, '_blank');
+      if (!tab && !atmCode) return;
+
+      const aliasMap = {
+        'kiosk': 'tabAtmTerminal',
+        'atm': 'tabAtmTerminal',
+        'atmkiosk': 'tabAtmTerminal',
+        'atm-kiosk': 'tabAtmTerminal',
+        'driver': 'tabDriverPortal',
+        'driverportal': 'tabDriverPortal',
+        'driver-portal': 'tabDriverPortal',
+        'fleet': 'tabFleet',
+        'atms': 'tabAtms',
+        'analytics': 'tabAnalytics',
+        'audit': 'tabAudit',
+        'copilot': 'tabCopilot',
+        'command': 'tabCommandCenter',
+        'commandcenter': 'tabCommandCenter'
+      };
+
+      if (tab && aliasMap[tab.toLowerCase()]) {
+        tab = aliasMap[tab.toLowerCase()];
+      }
+
+      if (atmCode && !tab) {
+        tab = 'tabAtmTerminal';
+      }
+
+      if (tab) {
+        this.activateTab(tab, false);
+      }
+
+      if (atmCode) {
+        setTimeout(() => {
+          const select = document.getElementById('kioskAtmSelect');
+          if (select) {
+            select.value = atmCode;
+            if (this.atmKiosk) this.atmKiosk.onAtmChanged(atmCode);
+          }
+        }, 300);
+      }
+    } catch (e) {
+      console.warn('URL routing notice:', e);
+    }
+  }
+
+  openAtmInKiosk(atmCode) {
+    this.closeAtmDrawer();
+    const newTabToggle = document.getElementById('navOpenNewTabToggle');
+    const openInNewTab = newTabToggle ? newTabToggle.checked : true;
+
+    if (openInNewTab) {
+      window.open(`/?tab=tabAtmTerminal&atm=${encodeURIComponent(atmCode)}`, '_blank');
+    } else {
+      this.activateTab('tabAtmTerminal');
+      setTimeout(() => {
+        const select = document.getElementById('kioskAtmSelect');
+        if (select) {
+          select.value = atmCode;
+          if (this.atmKiosk) this.atmKiosk.onAtmChanged(atmCode);
         }
-      });
-    });
+      }, 100);
+    }
   }
 
   setupSearchAndFilters() {
@@ -455,8 +544,71 @@ class CashRouteApp {
     const input = document.getElementById('copilotInput');
     const query = (customQuery || (input ? input.value : '')).trim();
     if (!query) return;
+
     if (input) input.value = '';
-    return this.sendCopilotPrompt(query);
+
+    const chatContainer = document.getElementById('copilotChatMessages');
+    if (!chatContainer) return;
+
+    // Render User message
+    const userMsg = document.createElement('div');
+    userMsg.style.cssText = 'display: flex; gap: 12px; align-items: flex-start; justify-content: flex-end;';
+    userMsg.innerHTML = `
+      <div class="clay-card" style="padding: 12px 16px; max-width: 80%; background: #4f46e5; color: white; border-radius: 16px 16px 4px 16px;">
+        ${this.escapeHtml(query)}
+      </div>
+      <div style="width: 36px; height: 36px; border-radius: 12px; background: #1e1b4b; color: white; display: flex; align-items: center; justify-content: center; font-size: 0.95rem; flex-shrink: 0;">👤</div>
+    `;
+    chatContainer.appendChild(userMsg);
+
+    // Render Loading AI placeholder
+    const loadingId = 'aiLoading_' + Date.now();
+    const aiMsg = document.createElement('div');
+    aiMsg.id = loadingId;
+    aiMsg.style.cssText = 'display: flex; gap: 12px; align-items: flex-start;';
+    aiMsg.innerHTML = `
+      <div style="width: 36px; height: 36px; border-radius: 12px; background: linear-gradient(135deg, #4f46e5, #7c3aed); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0;">✨</div>
+      <div class="clay-card-inset" style="padding: 14px 18px; max-width: 85%; line-height: 1.5;">
+        <span style="display: inline-flex; align-items: center; gap: 6px; color: #64748b;">
+          <span class="live-pulse"></span> Querying Gemini AI Copilot & evaluating telemetry...
+        </span>
+      </div>
+    `;
+    chatContainer.appendChild(aiMsg);
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+
+    try {
+      const res = await fetch('/api/ai/copilot', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query })
+      });
+      const data = await res.json();
+      const el = document.getElementById(loadingId);
+      if (el) {
+        const sourceBadge = data.source ? `<span class="clay-badge badge-primary" style="font-size: 0.68rem; margin-bottom: 6px; display: inline-block;">${data.source}</span>` : '';
+        const formattedResp = this.formatMarkdown(data.response || 'No response generated.');
+        el.innerHTML = `
+          <div style="width: 36px; height: 36px; border-radius: 12px; background: linear-gradient(135deg, #4f46e5, #7c3aed); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0;">✨</div>
+          <div class="clay-card-inset" style="padding: 14px 18px; max-width: 85%; line-height: 1.6;">
+            ${sourceBadge}
+            <div style="color: #0f172a; font-size: 0.88rem;">${formattedResp}</div>
+          </div>
+        `;
+      }
+    } catch (e) {
+      console.error('Copilot error:', e);
+      const el = document.getElementById(loadingId);
+      if (el) {
+        el.innerHTML = `
+          <div style="width: 36px; height: 36px; border-radius: 12px; background: #ef4444; color: white; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0;">⚠️</div>
+          <div class="clay-card-inset" style="padding: 14px 18px; max-width: 85%; color: #ef4444;">
+            Failed to contact AI Copilot. Please check network connectivity.
+          </div>
+        `;
+      }
+    }
+    chatContainer.scrollTop = chatContainer.scrollHeight;
   }
 
   escapeHtml(str) {
@@ -751,7 +903,8 @@ class CashRouteApp {
   }
 
   askCopilot(prompt) {
-    this.activateTab('tabCopilot');
+    const tabBtn = document.getElementById('navCopilot');
+    if (tabBtn) tabBtn.click();
     this.sendCopilotPrompt(prompt);
   }
 
@@ -823,12 +976,8 @@ class CashRouteApp {
     return html;
   }
 
-  getCopilotChatEl() {
-    return document.getElementById('copilotChatMessages') || document.getElementById('copilotChatWindow');
-  }
-
   appendCopilotUserMessage(text) {
-    const chat = this.getCopilotChatEl();
+    const chat = document.getElementById('copilotChatWindow');
     if (!chat) return;
 
     const div = document.createElement('div');
@@ -847,7 +996,7 @@ class CashRouteApp {
   }
 
   appendCopilotAIMessage(text, source) {
-    const chat = this.getCopilotChatEl();
+    const chat = document.getElementById('copilotChatWindow');
     if (!chat) return;
 
     const div = document.createElement('div');
@@ -872,7 +1021,7 @@ class CashRouteApp {
   }
 
   appendCopilotTypingIndicator() {
-    const chat = this.getCopilotChatEl();
+    const chat = document.getElementById('copilotChatWindow');
     if (!chat) return;
     const div = document.createElement('div');
     div.id = 'copilotTypingIndicator';
@@ -891,7 +1040,7 @@ class CashRouteApp {
   }
 
   clearCopilotChat() {
-    const chat = this.getCopilotChatEl();
+    const chat = document.getElementById('copilotChatWindow');
     if (!chat) return;
     chat.innerHTML = `
       <div style="display: flex; gap: 12px; align-items: flex-start;">
