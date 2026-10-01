@@ -3,7 +3,7 @@
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "https://fourth-rabbit-crest-vertex.trycloudflare.com/api/$1"
+      "destination": "https://cashrouteai-k611.onrender.com/api/$1"
     }
   ]
 }
