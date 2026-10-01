@@ -51,44 +51,42 @@ class DemandPredictionService:
         df["dt"] = pd.to_datetime(df["transactionTime"])
         df = df.sort_values(["atmId", "dt"]).reset_index(drop=True)
         
-        # Precompute lag and rolling features per ATM
-        grouped = df.groupby("atmId")
+        # Precompute lag and rolling features per ATM vectorized
+        df["hour"] = df["dt"].dt.hour
+        df["dayofweek"] = df["dt"].dt.dayofweek
+        df["is_weekend"] = df["dayofweek"].isin([5, 6]).astype(int)
+        df["hour_sin"] = np.sin(2 * np.pi * df["hour"] / 24.0)
+        df["hour_cos"] = np.cos(2 * np.pi * df["hour"] / 24.0)
+        df["dow_sin"] = np.sin(2 * np.pi * df["dayofweek"] / 7.0)
+        df["dow_cos"] = np.cos(2 * np.pi * df["dayofweek"] / 7.0)
+
+        g_out = df.groupby("atmId")["totalOutcome"]
+        g_in = df.groupby("atmId")["totalIncome"]
+
+        for lag in [1, 2, 3, 6, 12]:
+            df[f"out_lag_{lag}"] = g_out.shift(lag).fillna(0)
+            df[f"in_lag_{lag}"] = g_in.shift(lag).fillna(0)
+
+        df["out_roll_3"] = g_out.shift(1).rolling(3, min_periods=1).mean().fillna(0)
+        df["out_roll_6"] = g_out.shift(1).rolling(6, min_periods=1).mean().fillna(0)
+        df["out_roll_12"] = g_out.shift(1).rolling(12, min_periods=1).mean().fillna(0)
+        df["out_std_6"] = g_out.shift(1).rolling(6, min_periods=1).std().fillna(0)
+
         self.atm_history = {}
-        self.atm_recent_features = {}
+        self.atm_recent_features = df.groupby("atmId").last().to_dict(orient="index")
 
-        for atm_id, group in grouped:
-            g = group.copy()
-            g["hour"] = g["dt"].dt.hour
-            g["dayofweek"] = g["dt"].dt.dayofweek
-            g["is_weekend"] = g["dayofweek"].isin([5, 6]).astype(int)
-            g["hour_sin"] = np.sin(2 * np.pi * g["hour"] / 24.0)
-            g["hour_cos"] = np.cos(2 * np.pi * g["hour"] / 24.0)
-            g["dow_sin"] = np.sin(2 * np.pi * g["dayofweek"] / 7.0)
-            g["dow_cos"] = np.cos(2 * np.pi * g["dayofweek"] / 7.0)
-
-            for lag in [1, 2, 3, 6, 12]:
-                g[f"out_lag_{lag}"] = g["totalOutcome"].shift(lag).fillna(0)
-                g[f"in_lag_{lag}"] = g["totalIncome"].shift(lag).fillna(0)
-
-            g["out_roll_3"] = g["totalOutcome"].shift(1).rolling(3, min_periods=1).mean().fillna(0)
-            g["out_roll_6"] = g["totalOutcome"].shift(1).rolling(6, min_periods=1).mean().fillna(0)
-            g["out_roll_12"] = g["totalOutcome"].shift(1).rolling(12, min_periods=1).mean().fillna(0)
-            g["out_std_6"] = g["totalOutcome"].shift(1).rolling(6, min_periods=1).std().fillna(0)
-
-            # Store the last record as baseline feature vector
-            last_row = g.iloc[-1].to_dict()
-            self.atm_recent_features[atm_id] = last_row
-            
-            # Store last 12 history points for charting
-            history_points = []
-            for _, r in g.tail(12).iterrows():
-                history_points.append({
+        tail_history = df.groupby("atmId").tail(12)
+        for atm_id, group in tail_history.groupby("atmId"):
+            self.atm_history[atm_id] = [
+                {
                     "timestamp": r["transactionTime"],
                     "withdrawal": float(r["totalOutcome"]),
                     "deposit": float(r["totalIncome"]),
                     "balance": float(r["totalBalance"])
-                })
-            self.atm_history[atm_id] = history_points
+                }
+                for _, r in group.iterrows()
+            ]
+
 
     def build_feature_vector(self, atm_id, current_balance=None, hour=None, dayofweek=None, spike_factor=1.0):
         base_features = self.atm_recent_features.get(str(atm_id), None)
